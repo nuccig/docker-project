@@ -1,0 +1,46 @@
+name: python-project
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    volumes:
+      - db_data:/var/lib/mysql
+
+  backend:
+    build:
+      context: ./backend
+      tags:
+        - "my-python-backend:1.0"
+        - "my-python-backend:latest"
+    restart: always
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USER: user
+      DATABASE_PASSWORD: userpassword
+      DATABASE_NAME: mydatabase
+      DATABASE_URL: mysql://user:userpassword@db:3306/mydatabase
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend
+      tags:
+        - "my-python-frontend:1.0"
+        - "my-python-frontend:latest"
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
